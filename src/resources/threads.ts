@@ -104,3 +104,36 @@ threadsResource
       handleError(err, opts.json);
     }
   });
+
+threadsResource
+  .command("get-attachment")
+  .description("Get a thread attachment")
+  .argument("<inbox_id>", "Inbox ID")
+  .argument("<thread_id>", "Thread ID")
+  .argument("<attachment_id>", "Attachment ID")
+  .option("--json", "Output as JSON")
+  .option("--format <fmt>", "Output format: text, json, csv, yaml")
+  .action(async (inboxId: string, threadId: string, attachmentId: string, opts: any) => {
+    try {
+      const data = await client.get(`/inboxes/${inboxId}/threads/${threadId}/attachments/${attachmentId}`);
+      output(data, { json: opts.json, format: opts.format });
+    } catch (err) {
+      handleError(err, opts.json);
+    }
+  });
+
+threadsResource
+  .command("get-attachment-all")
+  .description("Get a thread attachment (org-wide)")
+  .argument("<thread_id>", "Thread ID")
+  .argument("<attachment_id>", "Attachment ID")
+  .option("--json", "Output as JSON")
+  .option("--format <fmt>", "Output format: text, json, csv, yaml")
+  .action(async (threadId: string, attachmentId: string, opts: any) => {
+    try {
+      const data = await client.get(`/threads/${threadId}/attachments/${attachmentId}`);
+      output(data, { json: opts.json, format: opts.format });
+    } catch (err) {
+      handleError(err, opts.json);
+    }
+  });

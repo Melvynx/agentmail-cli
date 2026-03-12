@@ -122,3 +122,70 @@ draftsResource
       handleError(err, opts.json);
     }
   });
+
+draftsResource
+  .command("get-attachment")
+  .description("Get a draft attachment")
+  .argument("<inbox_id>", "Inbox ID")
+  .argument("<draft_id>", "Draft ID")
+  .argument("<attachment_id>", "Attachment ID")
+  .option("--json", "Output as JSON")
+  .option("--format <fmt>", "Output format: text, json, csv, yaml")
+  .action(async (inboxId: string, draftId: string, attachmentId: string, opts: any) => {
+    try {
+      const data = await client.get(`/inboxes/${inboxId}/drafts/${draftId}/attachments/${attachmentId}`);
+      output(data, { json: opts.json, format: opts.format });
+    } catch (err) {
+      handleError(err, opts.json);
+    }
+  });
+
+draftsResource
+  .command("list-all")
+  .description("List all drafts (org-wide)")
+  .option("--limit <n>", "Max results to return")
+  .option("--page-token <token>", "Pagination token")
+  .option("--json", "Output as JSON")
+  .option("--format <fmt>", "Output format: text, json, csv, yaml")
+  .action(async (opts: any) => {
+    try {
+      const params: Record<string, string> = {};
+      if (opts.limit) params.limit = opts.limit;
+      if (opts.pageToken) params.page_token = opts.pageToken;
+      const data = await client.get("/drafts", params);
+      output(data, { json: opts.json, format: opts.format });
+    } catch (err) {
+      handleError(err, opts.json);
+    }
+  });
+
+draftsResource
+  .command("get-all")
+  .description("Get a draft (org-wide)")
+  .argument("<draft_id>", "Draft ID")
+  .option("--json", "Output as JSON")
+  .option("--format <fmt>", "Output format: text, json, csv, yaml")
+  .action(async (draftId: string, opts: any) => {
+    try {
+      const data = await client.get(`/drafts/${draftId}`);
+      output(data, { json: opts.json, format: opts.format });
+    } catch (err) {
+      handleError(err, opts.json);
+    }
+  });
+
+draftsResource
+  .command("get-attachment-all")
+  .description("Get a draft attachment (org-wide)")
+  .argument("<draft_id>", "Draft ID")
+  .argument("<attachment_id>", "Attachment ID")
+  .option("--json", "Output as JSON")
+  .option("--format <fmt>", "Output format: text, json, csv, yaml")
+  .action(async (draftId: string, attachmentId: string, opts: any) => {
+    try {
+      const data = await client.get(`/drafts/${draftId}/attachments/${attachmentId}`);
+      output(data, { json: opts.json, format: opts.format });
+    } catch (err) {
+      handleError(err, opts.json);
+    }
+  });

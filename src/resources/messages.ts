@@ -184,3 +184,20 @@ messagesResource
       handleError(err, opts.json);
     }
   });
+
+messagesResource
+  .command("get-attachment")
+  .description("Get a message attachment")
+  .argument("<inbox_id>", "Inbox ID")
+  .argument("<message_id>", "Message ID")
+  .argument("<attachment_id>", "Attachment ID")
+  .option("--json", "Output as JSON")
+  .option("--format <fmt>", "Output format: text, json, csv, yaml")
+  .action(async (inboxId: string, messageId: string, attachmentId: string, opts: any) => {
+    try {
+      const data = await client.get(`/inboxes/${inboxId}/messages/${messageId}/attachments/${attachmentId}`);
+      output(data, { json: opts.json, format: opts.format });
+    } catch (err) {
+      handleError(err, opts.json);
+    }
+  });

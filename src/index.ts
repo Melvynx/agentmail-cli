@@ -12,6 +12,12 @@ import { listsResource } from "./resources/lists.js";
 import { podsResource } from "./resources/pods.js";
 import { apiKeysResource } from "./resources/api-keys.js";
 import { metricsResource } from "./resources/metrics.js";
+import { podInboxesResource } from "./resources/pod-inboxes.js";
+import { podThreadsResource } from "./resources/pod-threads.js";
+import { podDraftsResource } from "./resources/pod-drafts.js";
+import { podDomainsResource } from "./resources/pod-domains.js";
+import { podListsResource } from "./resources/pod-lists.js";
+import { podMetricsResource } from "./resources/pod-metrics.js";
 
 const program = new Command();
 
@@ -47,5 +53,11 @@ program.addCommand(listsResource);
 program.addCommand(podsResource);
 program.addCommand(apiKeysResource);
 program.addCommand(metricsResource);
+program.addCommand(podInboxesResource);
+program.addCommand(podThreadsResource);
+program.addCommand(podDraftsResource);
+program.addCommand(podDomainsResource);
+program.addCommand(podListsResource);
+program.addCommand(podMetricsResource);
 
 program.parse();

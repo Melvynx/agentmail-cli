@@ -1,6 +1,6 @@
 ---
 name: agentmail
-description: "Manage agentmail via CLI - inboxes, messages, threads, drafts, webhooks, domains, lists, pods, api-keys, metrics. Use when user mentions 'agentmail' or wants to interact with the agentmail API."
+description: "Manage agentmail via CLI - inboxes, messages, threads, drafts, webhooks, domains, lists, pods, api-keys, metrics, pod-inboxes, pod-threads, pod-drafts, pod-domains, pod-lists, pod-metrics. Use when user mentions 'agentmail' or wants to interact with the agentmail API."
 category: email
 ---
 
@@ -51,6 +51,7 @@ agentmail-cli messages reply-all <inbox_id> <message_id> [--text TEXT] [--html H
 agentmail-cli messages forward <inbox_id> <message_id> --to ADDR [--text TEXT] [--html HTML]
 agentmail-cli messages update <inbox_id> <message_id> [--labels JSON] [--add-labels L1,L2] [--remove-labels L1,L2]
 agentmail-cli messages get-raw <inbox_id> <message_id>
+agentmail-cli messages get-attachment <inbox_id> <message_id> <attachment_id>
 ```
 
 ### threads
@@ -61,6 +62,8 @@ agentmail-cli threads delete <inbox_id> <thread_id>
 agentmail-cli threads list-all [--limit N] [--page-token TOKEN]
 agentmail-cli threads get-all <thread_id>
 agentmail-cli threads delete-all <thread_id>
+agentmail-cli threads get-attachment <inbox_id> <thread_id> <attachment_id>
+agentmail-cli threads get-attachment-all <thread_id> <attachment_id>
 ```
 
 ### drafts
@@ -71,6 +74,10 @@ agentmail-cli drafts create <inbox_id> [--to ADDR] [--subject SUBJ] [--text TEXT
 agentmail-cli drafts update <inbox_id> <draft_id> [--to ADDR] [--subject SUBJ] [--text TEXT] [--html HTML]
 agentmail-cli drafts delete <inbox_id> <draft_id>
 agentmail-cli drafts send <inbox_id> <draft_id>
+agentmail-cli drafts get-attachment <inbox_id> <draft_id> <attachment_id>
+agentmail-cli drafts list-all [--limit N] [--page-token TOKEN]
+agentmail-cli drafts get-all <draft_id>
+agentmail-cli drafts get-attachment-all <draft_id> <attachment_id>
 ```
 
 ### webhooks
@@ -120,6 +127,54 @@ agentmail-cli api-keys delete <key_id>
 ```bash
 agentmail-cli metrics query [--start-date DATE] [--end-date DATE] [--inbox-id ID] [--pod-id ID] [--event-type TYPE]
 agentmail-cli metrics query-inbox <inbox_id> [--start-date DATE] [--end-date DATE]
+```
+
+### pod-inboxes
+```bash
+agentmail-cli pod-inboxes list <pod_id> [--limit N] [--page-token TOKEN]
+agentmail-cli pod-inboxes get <pod_id> <inbox_id>
+agentmail-cli pod-inboxes create <pod_id> [--username USER] [--domain DOMAIN] [--display-name NAME] [--client-id ID]
+agentmail-cli pod-inboxes update <pod_id> <inbox_id> [--display-name NAME]
+agentmail-cli pod-inboxes delete <pod_id> <inbox_id>
+```
+
+### pod-threads
+```bash
+agentmail-cli pod-threads list <pod_id> [--limit N] [--page-token TOKEN]
+agentmail-cli pod-threads get <pod_id> <thread_id>
+agentmail-cli pod-threads get-attachment <pod_id> <thread_id> <attachment_id>
+agentmail-cli pod-threads delete <pod_id> <thread_id>
+```
+
+### pod-drafts
+```bash
+agentmail-cli pod-drafts list <pod_id> [--limit N] [--page-token TOKEN]
+agentmail-cli pod-drafts get <pod_id> <draft_id>
+agentmail-cli pod-drafts get-attachment <pod_id> <draft_id> <attachment_id>
+```
+
+### pod-domains
+```bash
+agentmail-cli pod-domains list <pod_id> [--limit N] [--page-token TOKEN]
+agentmail-cli pod-domains get <pod_id> <domain_id>
+agentmail-cli pod-domains zone-file <pod_id> <domain_id>
+agentmail-cli pod-domains create <pod_id> --domain DOMAIN [--feedback-enabled]
+agentmail-cli pod-domains update <pod_id> <domain_id> [--feedback-enabled | --no-feedback-enabled]
+agentmail-cli pod-domains delete <pod_id> <domain_id>
+agentmail-cli pod-domains verify <pod_id> <domain_id>
+```
+
+### pod-lists
+```bash
+agentmail-cli pod-lists list <pod_id> [--limit N] [--page-token TOKEN] [--list-type TYPE] [--pattern PAT]
+agentmail-cli pod-lists get <pod_id> <list_id>
+agentmail-cli pod-lists create <pod_id> [--list-type TYPE] [--pattern PAT] [--description DESC]
+agentmail-cli pod-lists delete <pod_id> <list_id>
+```
+
+### pod-metrics
+```bash
+agentmail-cli pod-metrics query <pod_id> [--start-date DATE] [--end-date DATE] [--event-type TYPE]
 ```
 
 ## Output Format

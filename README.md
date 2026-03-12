@@ -45,6 +45,7 @@ messages reply-all <inbox_id> <message_id> [--text] [--html] [--cc] [--bcc]
 messages forward <inbox_id> <message_id> --to [--text] [--html]
 messages update <inbox_id> <message_id> [--labels JSON] [--add-labels] [--remove-labels]
 messages get-raw <inbox_id> <message_id>
+messages get-attachment <inbox_id> <message_id> <attachment_id>
 ```
 
 ### threads
@@ -55,6 +56,8 @@ threads delete <inbox_id> <thread_id>
 threads list-all [--limit] [--page-token]
 threads get-all <thread_id>
 threads delete-all <thread_id>
+threads get-attachment <inbox_id> <thread_id> <attachment_id>
+threads get-attachment-all <thread_id> <attachment_id>
 ```
 
 ### drafts
@@ -65,6 +68,10 @@ drafts create <inbox_id> [--to] [--subject] [--text] [--html] [--cc] [--bcc]
 drafts update <inbox_id> <draft_id> [--to] [--subject] [--text] [--html]
 drafts delete <inbox_id> <draft_id>
 drafts send <inbox_id> <draft_id>
+drafts get-attachment <inbox_id> <draft_id> <attachment_id>
+drafts list-all [--limit] [--page-token]
+drafts get-all <draft_id>
+drafts get-attachment-all <draft_id> <attachment_id>
 ```
 
 ### webhooks
@@ -114,6 +121,54 @@ api-keys delete <key_id>
 ```
 metrics query [--start-date] [--end-date] [--inbox-id] [--pod-id] [--event-type]
 metrics query-inbox <inbox_id> [--start-date] [--end-date]
+```
+
+### pod-inboxes
+```
+pod-inboxes list <pod_id> [--limit] [--page-token]
+pod-inboxes get <pod_id> <inbox_id>
+pod-inboxes create <pod_id> [--username] [--domain] [--display-name] [--client-id]
+pod-inboxes update <pod_id> <inbox_id> [--display-name]
+pod-inboxes delete <pod_id> <inbox_id>
+```
+
+### pod-threads
+```
+pod-threads list <pod_id> [--limit] [--page-token]
+pod-threads get <pod_id> <thread_id>
+pod-threads get-attachment <pod_id> <thread_id> <attachment_id>
+pod-threads delete <pod_id> <thread_id>
+```
+
+### pod-drafts
+```
+pod-drafts list <pod_id> [--limit] [--page-token]
+pod-drafts get <pod_id> <draft_id>
+pod-drafts get-attachment <pod_id> <draft_id> <attachment_id>
+```
+
+### pod-domains
+```
+pod-domains list <pod_id> [--limit] [--page-token]
+pod-domains get <pod_id> <domain_id>
+pod-domains zone-file <pod_id> <domain_id>
+pod-domains create <pod_id> --domain [--feedback-enabled]
+pod-domains update <pod_id> <domain_id> [--feedback-enabled | --no-feedback-enabled]
+pod-domains delete <pod_id> <domain_id>
+pod-domains verify <pod_id> <domain_id>
+```
+
+### pod-lists
+```
+pod-lists list <pod_id> [--limit] [--page-token] [--list-type] [--pattern]
+pod-lists get <pod_id> <list_id>
+pod-lists create <pod_id> [--list-type] [--pattern] [--description]
+pod-lists delete <pod_id> <list_id>
+```
+
+### pod-metrics
+```
+pod-metrics query <pod_id> [--start-date] [--end-date] [--event-type]
 ```
 
 ## Global Flags
