@@ -1,201 +1,208 @@
 ---
 name: agentmail
-description: "Manage agentmail via CLI - inboxes, messages, threads, drafts, webhooks, domains, lists, pods, api-keys, metrics, pod-inboxes, pod-threads, pod-drafts, pod-domains, pod-lists, pod-metrics. Use when user mentions 'agentmail' or wants to interact with the agentmail API."
+description: "Give AI agents their own email inboxes. Create inboxes, send/receive/reply to emails, manage threads, drafts, webhooks, domains, and multi-tenant pods via the AgentMail API. Use when: user wants to send email from an agent, create agent email addresses, manage agent email workflows, set up email webhooks, or anything involving agentmail.to."
 category: email
 ---
 
 # agentmail-cli
 
+AgentMail gives AI agents their own email inboxes. Create addresses on the fly, send/receive emails, manage conversations, and build email-driven agent workflows.
+
+## When to use this skill
+
+- **"Send an email from my agent"** : messages send
+- **"Create an email inbox for X"** : inboxes create
+- **"Check my agent's inbox"** : messages list
+- **"Reply to that email"** : messages reply
+- **"Set up email notifications"** : webhooks create
+- **"Add my custom domain"** : domains create + verify
+- **"Forward this email to..."** : messages forward
+- **"Draft an email for review"** : drafts create, then drafts send
+- **"Create isolated email environments"** : pods create + pod-inboxes create
+
+## When NOT to use this skill
+
+- For Gmail/Google Workspace emails : use the `gws-gmail` skill instead
+- For Lumail email marketing : use the `lumail` CLI instead
+- For generic SMTP/IMAP : AgentMail has IMAP/SMTP but the CLI uses the REST API
+
 ## Setup
 
-If `agentmail-cli` is not found, install and build it:
+If `agentmail-cli` is not found:
+```bash
+npx api2cli install Melvynx/agentmail-cli
+```
+
+Or manually:
 ```bash
 bun --version || curl -fsSL https://bun.sh/install | bash
 npx api2cli bundle agentmail
 npx api2cli link agentmail
 ```
 
-`api2cli link` adds `~/.local/bin` to PATH automatically. The CLI is available in the next command.
-
 Always use `--json` flag when calling commands programmatically.
 
 ## Authentication
 
+Get your API key from https://console.agentmail.to
+
 ```bash
-agentmail-cli auth set "your-token"
+agentmail-cli auth set "am_..."
 agentmail-cli auth test
 ```
 
-Auth commands: `auth set <token>`, `auth show`, `auth remove`, `auth test`
+Token stored at `~/.config/tokens/agentmail-cli.txt` (chmod 600).
 
-Token is stored in `~/.config/tokens/agentmail-cli.txt`.
+## Common Workflows
+
+### Create an inbox and send an email
+```bash
+agentmail-cli inboxes create --username myagent --display-name "My Agent"
+agentmail-cli messages send "myagent@agentmail.to" --to "user@example.com" --subject "Hello" --text "Hello from my agent!"
+```
+
+### Check inbox and reply
+```bash
+agentmail-cli messages list "myagent@agentmail.to" --json
+agentmail-cli messages reply "myagent@agentmail.to" <message_id> --text "Thanks for your email!"
+```
+
+### Set up a webhook for incoming emails
+```bash
+agentmail-cli webhooks create --url "https://myapp.com/webhook" --events '["message.received"]'
+```
+
+### Custom domain setup
+```bash
+agentmail-cli domains create --domain "mail.mycompany.com" --feedback-enabled
+agentmail-cli domains zone-file <domain_id>   # Get DNS records to add
+agentmail-cli domains verify <domain_id>       # Verify after DNS propagation
+```
+
+### Multi-tenant (pods)
+```bash
+agentmail-cli pods create --name "client-a"
+agentmail-cli pod-inboxes create <pod_id> --username support --domain agentmail.to
+```
 
 ## Resources
 
-### inboxes
-```bash
-agentmail-cli inboxes list [--limit N] [--page-token TOKEN]
-agentmail-cli inboxes get <inbox_id>
-agentmail-cli inboxes create [--username USER] [--domain DOMAIN] [--display-name NAME] [--client-id ID]
-agentmail-cli inboxes update <inbox_id> [--display-name NAME]
-agentmail-cli inboxes delete <inbox_id>
-```
+### inboxes — Create and manage email addresses
 
-### messages
-```bash
-agentmail-cli messages list <inbox_id> [--limit N] [--page-token TOKEN] [--labels LABELS]
-agentmail-cli messages get <inbox_id> <message_id>
-agentmail-cli messages send <inbox_id> --to ADDR --subject SUBJ [--text TEXT] [--html HTML] [--cc CC] [--bcc BCC] [--reply-to ADDR] [--labels JSON]
-agentmail-cli messages reply <inbox_id> <message_id> [--text TEXT] [--html HTML] [--cc CC] [--bcc BCC]
-agentmail-cli messages reply-all <inbox_id> <message_id> [--text TEXT] [--html HTML] [--cc CC] [--bcc BCC]
-agentmail-cli messages forward <inbox_id> <message_id> --to ADDR [--text TEXT] [--html HTML]
-agentmail-cli messages update <inbox_id> <message_id> [--labels JSON] [--add-labels L1,L2] [--remove-labels L1,L2]
-agentmail-cli messages get-raw <inbox_id> <message_id>
-agentmail-cli messages get-attachment <inbox_id> <message_id> <attachment_id>
-```
+| Command | Description |
+|---------|-------------|
+| `inboxes list` | List all inboxes |
+| `inboxes get <inbox_id>` | Get inbox details |
+| `inboxes create [--username USER] [--domain DOMAIN] [--display-name NAME]` | Create inbox (username auto-generated if omitted) |
+| `inboxes update <inbox_id> [--display-name NAME]` | Update inbox |
+| `inboxes delete <inbox_id>` | Delete inbox |
 
-### threads
-```bash
-agentmail-cli threads list <inbox_id> [--limit N] [--page-token TOKEN]
-agentmail-cli threads get <inbox_id> <thread_id>
-agentmail-cli threads delete <inbox_id> <thread_id>
-agentmail-cli threads list-all [--limit N] [--page-token TOKEN]
-agentmail-cli threads get-all <thread_id>
-agentmail-cli threads delete-all <thread_id>
-agentmail-cli threads get-attachment <inbox_id> <thread_id> <attachment_id>
-agentmail-cli threads get-attachment-all <thread_id> <attachment_id>
-```
+### messages — Send, receive, reply, forward emails
 
-### drafts
-```bash
-agentmail-cli drafts list <inbox_id> [--limit N] [--page-token TOKEN]
-agentmail-cli drafts get <inbox_id> <draft_id>
-agentmail-cli drafts create <inbox_id> [--to ADDR] [--subject SUBJ] [--text TEXT] [--html HTML] [--cc CC] [--bcc BCC]
-agentmail-cli drafts update <inbox_id> <draft_id> [--to ADDR] [--subject SUBJ] [--text TEXT] [--html HTML]
-agentmail-cli drafts delete <inbox_id> <draft_id>
-agentmail-cli drafts send <inbox_id> <draft_id>
-agentmail-cli drafts get-attachment <inbox_id> <draft_id> <attachment_id>
-agentmail-cli drafts list-all [--limit N] [--page-token TOKEN]
-agentmail-cli drafts get-all <draft_id>
-agentmail-cli drafts get-attachment-all <draft_id> <attachment_id>
-```
+| Command | Description |
+|---------|-------------|
+| `messages list <inbox_id> [--labels L]` | List messages (filter by labels) |
+| `messages get <inbox_id> <message_id>` | Get full message |
+| `messages send <inbox_id> --to ADDR --subject SUBJ [--text T] [--html H] [--cc CC] [--bcc BCC]` | Send email |
+| `messages reply <inbox_id> <message_id> [--text T] [--html H]` | Reply to message |
+| `messages reply-all <inbox_id> <message_id> [--text T] [--html H]` | Reply all |
+| `messages forward <inbox_id> <message_id> --to ADDR [--text T]` | Forward message |
+| `messages update <inbox_id> <message_id> [--labels JSON] [--add-labels L] [--remove-labels L]` | Update labels |
+| `messages get-raw <inbox_id> <message_id>` | Get raw RFC822 message |
+| `messages get-attachment <inbox_id> <message_id> <attachment_id>` | Download attachment |
 
-### webhooks
-```bash
-agentmail-cli webhooks list [--limit N] [--page-token TOKEN]
-agentmail-cli webhooks get <webhook_id>
-agentmail-cli webhooks create --url URL [--events JSON] [--pod-ids JSON] [--inbox-ids JSON]
-agentmail-cli webhooks update <webhook_id> [--url URL] [--events JSON] [--pod-ids JSON] [--inbox-ids JSON]
-agentmail-cli webhooks delete <webhook_id>
-```
+### threads — Conversation threads
 
-### domains
-```bash
-agentmail-cli domains list [--limit N] [--page-token TOKEN]
-agentmail-cli domains get <domain_id>
-agentmail-cli domains create --domain DOMAIN [--feedback-enabled]
-agentmail-cli domains update <domain_id> [--feedback-enabled | --no-feedback-enabled]
-agentmail-cli domains delete <domain_id>
-agentmail-cli domains verify <domain_id>
-agentmail-cli domains zone-file <domain_id>
-```
+| Command | Description |
+|---------|-------------|
+| `threads list <inbox_id>` | List threads in inbox |
+| `threads get <inbox_id> <thread_id>` | Get thread with messages |
+| `threads delete <inbox_id> <thread_id>` | Delete thread |
+| `threads list-all` | List threads org-wide |
+| `threads get-all <thread_id>` | Get thread org-wide |
+| `threads delete-all <thread_id>` | Delete thread org-wide |
+| `threads get-attachment <inbox_id> <thread_id> <attachment_id>` | Get attachment |
+| `threads get-attachment-all <thread_id> <attachment_id>` | Get attachment org-wide |
 
-### lists
-```bash
-agentmail-cli lists list [--limit N] [--page-token TOKEN] [--list-type TYPE] [--pattern PAT]
-agentmail-cli lists get <list_id>
-agentmail-cli lists create [--list-type TYPE] [--pattern PAT] [--description DESC]
-agentmail-cli lists delete <list_id>
-```
+### drafts — Create drafts for human-in-the-loop review
 
-### pods
-```bash
-agentmail-cli pods list [--limit N] [--page-token TOKEN]
-agentmail-cli pods get <pod_id>
-agentmail-cli pods create [--name NAME]
-agentmail-cli pods delete <pod_id>
-```
+| Command | Description |
+|---------|-------------|
+| `drafts list <inbox_id>` | List drafts |
+| `drafts get <inbox_id> <draft_id>` | Get draft |
+| `drafts create <inbox_id> [--to ADDR] [--subject S] [--text T] [--html H]` | Create draft |
+| `drafts update <inbox_id> <draft_id> [--to ADDR] [--subject S] [--text T]` | Update draft |
+| `drafts delete <inbox_id> <draft_id>` | Delete draft |
+| `drafts send <inbox_id> <draft_id>` | Send draft |
+| `drafts list-all` | List drafts org-wide |
+| `drafts get-all <draft_id>` | Get draft org-wide |
+| `drafts get-attachment <inbox_id> <draft_id> <attachment_id>` | Get attachment |
 
-### api-keys
-```bash
-agentmail-cli api-keys list
-agentmail-cli api-keys create [--name NAME] [--pod-id ID] [--scopes JSON]
-agentmail-cli api-keys delete <key_id>
-```
+### webhooks — Event-driven email notifications
 
-### metrics
-```bash
-agentmail-cli metrics query [--start-date DATE] [--end-date DATE] [--inbox-id ID] [--pod-id ID] [--event-type TYPE]
-agentmail-cli metrics query-inbox <inbox_id> [--start-date DATE] [--end-date DATE]
-```
+| Command | Description |
+|---------|-------------|
+| `webhooks list` | List webhooks |
+| `webhooks get <webhook_id>` | Get webhook |
+| `webhooks create --url URL [--events JSON] [--inbox-ids JSON] [--pod-ids JSON]` | Create webhook |
+| `webhooks update <webhook_id> [--url URL] [--events JSON]` | Update webhook |
+| `webhooks delete <webhook_id>` | Delete webhook |
 
-### pod-inboxes
-```bash
-agentmail-cli pod-inboxes list <pod_id> [--limit N] [--page-token TOKEN]
-agentmail-cli pod-inboxes get <pod_id> <inbox_id>
-agentmail-cli pod-inboxes create <pod_id> [--username USER] [--domain DOMAIN] [--display-name NAME] [--client-id ID]
-agentmail-cli pod-inboxes update <pod_id> <inbox_id> [--display-name NAME]
-agentmail-cli pod-inboxes delete <pod_id> <inbox_id>
-```
+Event types: `message.received`, `message.sent`, `message.delivered`, `message.bounced`, `message.complained`, `message.rejected`, `domain.verified`
 
-### pod-threads
-```bash
-agentmail-cli pod-threads list <pod_id> [--limit N] [--page-token TOKEN]
-agentmail-cli pod-threads get <pod_id> <thread_id>
-agentmail-cli pod-threads get-attachment <pod_id> <thread_id> <attachment_id>
-agentmail-cli pod-threads delete <pod_id> <thread_id>
-```
+### domains — Custom domain management
 
-### pod-drafts
-```bash
-agentmail-cli pod-drafts list <pod_id> [--limit N] [--page-token TOKEN]
-agentmail-cli pod-drafts get <pod_id> <draft_id>
-agentmail-cli pod-drafts get-attachment <pod_id> <draft_id> <attachment_id>
-```
+| Command | Description |
+|---------|-------------|
+| `domains list` | List domains |
+| `domains get <domain_id>` | Get domain status |
+| `domains create --domain DOMAIN [--feedback-enabled]` | Add custom domain |
+| `domains update <domain_id> [--feedback-enabled]` | Update domain |
+| `domains delete <domain_id>` | Remove domain |
+| `domains verify <domain_id>` | Trigger DNS verification |
+| `domains zone-file <domain_id>` | Get required DNS records |
 
-### pod-domains
-```bash
-agentmail-cli pod-domains list <pod_id> [--limit N] [--page-token TOKEN]
-agentmail-cli pod-domains get <pod_id> <domain_id>
-agentmail-cli pod-domains zone-file <pod_id> <domain_id>
-agentmail-cli pod-domains create <pod_id> --domain DOMAIN [--feedback-enabled]
-agentmail-cli pod-domains update <pod_id> <domain_id> [--feedback-enabled | --no-feedback-enabled]
-agentmail-cli pod-domains delete <pod_id> <domain_id>
-agentmail-cli pod-domains verify <pod_id> <domain_id>
-```
+### lists — Allow/block lists for email filtering
 
-### pod-lists
-```bash
-agentmail-cli pod-lists list <pod_id> [--limit N] [--page-token TOKEN] [--list-type TYPE] [--pattern PAT]
-agentmail-cli pod-lists get <pod_id> <list_id>
-agentmail-cli pod-lists create <pod_id> [--list-type TYPE] [--pattern PAT] [--description DESC]
-agentmail-cli pod-lists delete <pod_id> <list_id>
-```
+| Command | Description |
+|---------|-------------|
+| `lists list [--list-type TYPE] [--pattern PAT]` | List entries |
+| `lists get <list_id>` | Get entry |
+| `lists create [--list-type allow\|block] [--pattern PAT] [--description D]` | Create entry |
+| `lists delete <list_id>` | Delete entry |
 
-### pod-metrics
-```bash
-agentmail-cli pod-metrics query <pod_id> [--start-date DATE] [--end-date DATE] [--event-type TYPE]
-```
+### pods — Multi-tenant email environments
 
-## Output Format
+| Command | Description |
+|---------|-------------|
+| `pods list` | List pods |
+| `pods get <pod_id>` | Get pod |
+| `pods create [--name NAME]` | Create pod |
+| `pods delete <pod_id>` | Delete pod |
 
-`--json` returns a standardized envelope:
-```json
-{ "ok": true, "data": { ... }, "meta": { "total": 42 } }
-```
+Pod sub-resources: `pod-inboxes`, `pod-threads`, `pod-drafts`, `pod-domains`, `pod-lists`, `pod-metrics` — same syntax as top-level but scoped with `<pod_id>` as first argument.
 
-On error: `{ "ok": false, "error": { "message": "...", "status": 401 } }`
+### api-keys — Manage API keys
 
-## Quick Reference
+| Command | Description |
+|---------|-------------|
+| `api-keys list` | List API keys |
+| `api-keys create [--name NAME] [--pod-id ID] [--scopes JSON]` | Create key |
+| `api-keys delete <key_id>` | Delete key |
 
-```bash
-agentmail-cli --help                    # List all resources and global flags
-agentmail-cli <resource> --help         # List all actions for a resource
-agentmail-cli <resource> <action> --help # Show flags for a specific action
-```
+### metrics — Email analytics
 
-## Global Flags
+| Command | Description |
+|---------|-------------|
+| `metrics query [--start-date D] [--end-date D] [--inbox-id ID] [--event-type T]` | Query org metrics |
+| `metrics query-inbox <inbox_id> [--start-date D] [--end-date D]` | Query inbox metrics |
+
+## Output
 
 All commands support: `--json`, `--format <text|json|csv|yaml>`, `--verbose`, `--no-color`, `--no-header`
+
+`--json` returns: `{ "ok": true, "data": {...}, "meta": {...} }`
+
+Pagination: use `--limit N` and `--page-token TOKEN` on list commands.
 
 Exit codes: 0 = success, 1 = API error, 2 = usage error
